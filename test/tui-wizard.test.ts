@@ -1,7 +1,15 @@
-import { expect, test } from "bun:test";
+import { beforeAll, expect, test } from "bun:test";
 import { testRender } from "@opentui/react/test-utils";
 import { createElement } from "react";
 import { App } from "../src/tui/app.tsx";
+
+beforeAll(async () => {
+  const setup = await testRender(createElement(App, { initialFlags: {} }), {
+    width: 80,
+    height: 24,
+  });
+  setup.renderer.destroy();
+});
 
 test("wizard first frame shows Backend and blocks Polar when auth is none", async () => {
   const started = performance.now();
@@ -73,6 +81,32 @@ test("Start plus tRPC preview lists src/routes", async () => {
     expect(frame).toContain("src/routes");
     expect(frame).toContain("--frontend tanstack-start");
     expect(frame).toContain("--api trpc");
+  } finally {
+    setup.renderer.destroy();
+  }
+});
+
+test("argv database sqlite survives in the command preview", async () => {
+  const setup = await testRender(
+    createElement(App, { initialFlags: { database: "sqlite" } }),
+    { width: 80, height: 24 },
+  );
+  try {
+    await setup.renderOnce();
+    expect(setup.captureCharFrame()).toContain("--database sqlite");
+  } finally {
+    setup.renderer.destroy();
+  }
+});
+
+test("40x12 still shows the full command preview", async () => {
+  const setup = await testRender(
+    createElement(App, { initialFlags: { auth: "none" } }),
+    { width: 40, height: 12 },
+  );
+  try {
+    await setup.renderOnce();
+    expect(setup.captureCharFrame()).toContain("create-gb-app my-gb-app");
   } finally {
     setup.renderer.destroy();
   }

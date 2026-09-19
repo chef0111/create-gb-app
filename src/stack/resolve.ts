@@ -4,6 +4,7 @@ import type {
   Database,
   DbSetup,
   Payments,
+  PresetFields,
   RawFlags,
   Stack,
 } from "./types.ts";
@@ -19,7 +20,7 @@ export const YES_DEFAULTS = {
   payments: "none",
   ui: "shadcn",
   linter: "eslint",
-} as const;
+} as const satisfies PresetFields;
 
 function assertPayments(auth: Auth, payments: Payments): void {
   if (auth === "clerk" && payments === "polar") {
@@ -63,7 +64,7 @@ export function resolveStack(raw: RawFlags): Stack {
     if (raw.orm !== undefined) {
       throw new CompatError(RULE_IDS.convexOrmOff);
     }
-    if (raw.dbSetup !== undefined) {
+    if (raw.dbSetup !== undefined && raw.dbSetup !== "none") {
       throw new CompatError(RULE_IDS.convexDbSetupOff);
     }
     assertPayments(auth, payments);
